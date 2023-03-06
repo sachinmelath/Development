@@ -1,0 +1,70 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  development:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install Dependencies
+        run: |
+          cd api
+          npm install
+          cd ../frontend
+          npm install
+
+      - name: Build Docker Images
+        run: |
+          docker build -t myapp/api:dev ./api
+          docker build -t myapp/frontend:dev ./frontend
+
+  testing:
+    runs-on: ubuntu-latest
+
+    needs: development
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Test Python Script
+        run: |
+          cd api
+          python -m unittest discover
+
+      - name: Test ReactJS Frontend
+        run: |
+          cd frontend
+          npm test
+
+      - name: Build Docker Images
+        run: |
+          docker build -t myapp/api:latest ./api
+          docker build -t myapp/frontend:latest ./frontend
+
+      - name: Push Docker Images
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: |
+            myapp/api:latest
+            myapp/frontend:latest
+
