@@ -27,8 +27,8 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -t myapp/api:latest ./api
-          docker build -t myapp/frontend:latest ./frontend
+          docker build -t dev/api:latest ./api
+          docker build -t dev/frontend:latest ./frontend
 
   deploy:
     needs: build
